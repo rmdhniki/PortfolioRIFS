@@ -2,6 +2,7 @@ import { FaGithub, FaGitlab, FaLinkedinIn } from "react-icons/fa6";
 import { ArrowUpRight } from "lucide-react";
 import { SmoothLink } from "@/components/smooth-link";
 import { Glow } from "@/components/motion/glow";
+import { DeveloperCredit } from "@/components/layout/developer-credit";
 import type { SocialLink } from "@/lib/supabase/types";
 
 const socialIcons = {
@@ -77,7 +78,7 @@ export function Footer({
 
         <div className="flex flex-col gap-2 text-xs text-espresso/60 md:flex-row md:items-center md:justify-between">
           <p>&copy; {new Date().getFullYear()} {name}. All rights reserved.</p>
-          <p>Designed &amp; Developed by {name}</p>
+          <DeveloperCredit name={name} />
         </div>
       </div>
     </footer>

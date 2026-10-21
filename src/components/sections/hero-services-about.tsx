@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 import { ArrowDown, ChevronDown, Code2, Sparkles } from "lucide-react";
 import { Typewriter } from "@/components/motion/typewriter";
 import { Reveal } from "@/components/motion/reveal";
@@ -10,7 +11,14 @@ import { Glow } from "@/components/motion/glow";
 import { SmoothLink } from "@/components/smooth-link";
 import type { StatItem, ServiceItem } from "@/lib/supabase/types";
 
-function FlipPortrait() {
+function FlipPortrait({ imageUrl }: { imageUrl: string | null }) {
+  if (imageUrl) {
+    return (
+      <div className="relative h-full w-full overflow-hidden rounded-[1.75rem]">
+        <Image src={imageUrl} alt="" fill sizes="280px" className="object-cover" />
+      </div>
+    );
+  }
   return (
     <div className="relative flex h-full w-full items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-secondary via-cream-soft to-caramel/60">
       <span className="font-display text-6xl font-medium text-primary">MR</span>
@@ -18,7 +26,14 @@ function FlipPortrait() {
   );
 }
 
-function FlipWorkspace() {
+function FlipWorkspace({ imageUrl }: { imageUrl: string | null }) {
+  if (imageUrl) {
+    return (
+      <div className="relative h-full w-full overflow-hidden rounded-[1.75rem]">
+        <Image src={imageUrl} alt="" fill sizes="280px" className="object-cover" />
+      </div>
+    );
+  }
   return (
     <div className="relative flex h-full w-full items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary via-[#4a3220] to-espresso">
       <Code2 className="size-16 text-cream/80" strokeWidth={1.25} />
@@ -41,6 +56,8 @@ export function HeroServicesAbout({
   aboutDescription,
   stats,
   services,
+  portraitImageUrl,
+  workspaceImageUrl,
 }: {
   name: string;
   roles: string[];
@@ -49,6 +66,8 @@ export function HeroServicesAbout({
   aboutDescription: string;
   stats: StatItem[];
   services: ServiceItem[];
+  portraitImageUrl: string | null;
+  workspaceImageUrl: string | null;
 }) {
   const groupRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -83,13 +102,13 @@ export function HeroServicesAbout({
               className="relative h-full w-full rounded-[1.75rem] shadow-2xl shadow-espresso/20"
             >
               <div style={{ backfaceVisibility: "hidden" }} className="absolute inset-0">
-                <FlipPortrait />
+                <FlipPortrait imageUrl={portraitImageUrl} />
               </div>
               <div
                 style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 className="absolute inset-0"
               >
-                <FlipWorkspace />
+                <FlipWorkspace imageUrl={workspaceImageUrl} />
               </div>
             </motion.div>
 
@@ -129,7 +148,7 @@ export function HeroServicesAbout({
 
           <div className="mx-auto">
             <div className="relative aspect-4/5 w-[220px] overflow-hidden rounded-[1.75rem] shadow-xl shadow-espresso/20 md:hidden">
-              <FlipPortrait />
+              <FlipPortrait imageUrl={portraitImageUrl} />
             </div>
           </div>
 
@@ -157,7 +176,7 @@ export function HeroServicesAbout({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.1, duration: 0.6 }}
-          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3"
+          className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 md:bottom-8"
         >
           <SmoothLink
             href="/#projects"

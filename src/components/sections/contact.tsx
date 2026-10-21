@@ -5,11 +5,15 @@ import { motion } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Glow } from "@/components/motion/glow";
-import { serviceOptions } from "@/lib/site-config";
+import { serviceOptions as staticServiceOptions } from "@/lib/site-config";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export function Contact() {
+export function Contact({
+  serviceOptions = staticServiceOptions,
+}: {
+  serviceOptions?: readonly string[];
+}) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
 

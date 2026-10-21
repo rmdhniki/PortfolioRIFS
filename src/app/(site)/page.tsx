@@ -14,6 +14,8 @@ import {
 export default async function Home() {
   const [settings, projects] = await Promise.all([getSiteSettings(), getProjects()]);
 
+  const serviceOptions = settings?.services?.map((s) => s.title);
+
   return (
     <>
       <HeroServicesAbout
@@ -24,13 +26,15 @@ export default async function Home() {
         aboutDescription={settings?.about_description ?? aboutContent.description}
         stats={settings?.stats ?? [...aboutContent.stats]}
         services={settings?.services ?? [...staticServices]}
+        portraitImageUrl={settings?.portrait_image_url ?? null}
+        workspaceImageUrl={settings?.workspace_image_url ?? null}
       />
       <TechStack
         row1={settings?.tech_stack_row1 ?? [...staticTechStack.row1]}
         row2={settings?.tech_stack_row2 ?? [...staticTechStack.row2]}
       />
       <Projects projects={projects} />
-      <Contact />
+      <Contact serviceOptions={serviceOptions} />
     </>
   );
 }

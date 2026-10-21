@@ -27,7 +27,6 @@ export const projectSchema = z.object({
   problem: z.string().trim().min(1, "Problem wajib diisi"),
   solution: z.string().trim().min(1, "Solution wajib diisi"),
   features: z.preprocess(linesToArray, z.array(z.string()).min(1, "Minimal 1 fitur")),
-  gallery: z.preprocess(linesToArray, z.array(z.string())),
   github: z.string().trim().url("URL tidak valid").optional().or(z.literal("")),
   demo: z.string().trim().url("URL tidak valid").optional().or(z.literal("")),
   order_index: z.coerce.number().int().default(0),

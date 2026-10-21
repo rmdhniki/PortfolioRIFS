@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio RIFS
 
-## Getting Started
+Next.js 15 portfolio with a Supabase-backed admin panel.
 
-First, run the development server:
+## Requirements
+
+- Node.js **20 or newer** (Next.js 15 refuses to start on Node 18.8)
+- npm 10+
+
+If you use nvm, `nvm use` picks up `.nvmrc`.
+
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fill `.env.local` with the Supabase and Resend credentials. The app still runs
+without them, but the admin panel and contact form stay disabled.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Access
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The dev server listens on **http://localhost:3000**. Do not open the project
+through the Laragon/Apache virtual host (`http://localhost/Portfolio_RIFS`):
+Apache serves the folder as static files and returns 404 because Next.js is not
+running behind it.
 
-## Learn More
+To reach the app from another device, use the `Network` URL printed by
+`npm run dev` and allow port 3000 through the firewall.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` - development server on port 3000
+- `npm run build` - production build
+- `npm run start` - serve the production build
+- `npm run lint` - ESLint

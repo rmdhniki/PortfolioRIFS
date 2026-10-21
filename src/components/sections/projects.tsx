@@ -5,8 +5,10 @@ import { ProjectStackCard } from "./project-stack-card";
 
 export function Projects({ projects }: { projects: ProjectRow[] }) {
   return (
-    <section id="projects" className="relative overflow-x-hidden">
-      <Glow className="top-0 left-1/2 size-[32rem] -translate-x-1/2 bg-secondary/50" />
+    <section id="projects" className="relative">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <Glow className="top-0 left-1/2 size-[32rem] -translate-x-1/2 bg-secondary/50" />
+      </div>
       <Reveal className="relative mx-auto max-w-6xl px-6 pt-24 text-center md:px-10">
         <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
           Featured Projects

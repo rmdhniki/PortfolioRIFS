@@ -175,18 +175,20 @@ export default async function ProjectDetailPage({
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="mx-auto max-w-5xl px-6 md:px-10">
-          <Reveal>
-            <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
-              Gallery
-            </h2>
-          </Reveal>
-          <Reveal delay={0.1} className="mt-8">
-            <GalleryCarousel slides={[...project.gallery]} />
-          </Reveal>
-        </div>
-      </section>
+      {project.gallery.length > 0 && (
+        <section className="py-16">
+          <div className="mx-auto max-w-5xl px-6 md:px-10">
+            <Reveal>
+              <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
+                Gallery
+              </h2>
+            </Reveal>
+            <Reveal delay={0.1} className="mt-8">
+              <GalleryCarousel slides={[...project.gallery]} />
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {(project.github || project.demo) && (
         <section className="py-16">

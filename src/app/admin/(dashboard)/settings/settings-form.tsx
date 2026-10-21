@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import type { SiteSettingsRow } from "@/lib/supabase/types";
 import { updateSettings, type SettingsFormState } from "./actions";
@@ -26,6 +27,51 @@ function Field({
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+function ImageField({
+  label,
+  name,
+  currentUrl,
+  hint,
+}: {
+  label: string;
+  name: string;
+  currentUrl: string | null;
+  hint: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={name} className="text-xs font-medium tracking-wide text-zinc-400 uppercase">
+        {label}
+      </label>
+      <div className="flex items-center gap-4">
+        {currentUrl ? (
+          <Image
+            src={currentUrl}
+            alt=""
+            width={72}
+            height={72}
+            className="size-18 rounded-xl object-cover"
+          />
+        ) : (
+          <div className="flex size-18 items-center justify-center rounded-xl bg-zinc-950 text-xs text-zinc-600">
+            Belum ada
+          </div>
+        )}
+        <div>
+          <input
+            id={name}
+            name={name}
+            type="file"
+            accept="image/*"
+            className="text-sm text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3.5 file:py-2 file:text-sm file:text-zinc-200"
+          />
+          <p className="mt-1.5 text-xs text-zinc-600">{hint}</p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -121,6 +167,25 @@ export function SettingsForm({ settings }: { settings: SiteSettingsRow }) {
             className={inputClass}
           />
         </Field>
+      </Section>
+
+      <Section title="Photos">
+        <p className="text-xs text-zinc-500">
+          Kartu foto yang bergerak dari Hero → Services → About Me di halaman
+          utama pakai 2 foto ini.
+        </p>
+        <ImageField
+          label="Portrait (Hero & About Me)"
+          name="portrait_image"
+          currentUrl={settings.portrait_image_url}
+          hint="Muncul di Hero dan lagi saat scroll ke About Me. Maks. 8MB."
+        />
+        <ImageField
+          label="Workspace (Services)"
+          name="workspace_image"
+          currentUrl={settings.workspace_image_url}
+          hint="Muncul saat scroll ke bagian What Can I Do For You. Maks. 8MB."
+        />
       </Section>
 
       <Section title="About">

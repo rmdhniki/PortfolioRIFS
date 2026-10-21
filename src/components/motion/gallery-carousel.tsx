@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -10,15 +11,23 @@ export function GalleryCarousel({ slides }: { slides: string[] }) {
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
+  if (slides.length === 0) return null;
+
   return (
     <div className="relative">
       <div className="overflow-hidden rounded-2xl" ref={emblaRef}>
         <div className="flex">
-          {slides.map((gradient, i) => (
+          {slides.map((src, i) => (
             <div key={i} className="min-w-0 flex-[0_0_85%] px-2 md:flex-[0_0_60%]">
-              <div
-                className={`aspect-video rounded-2xl border border-border bg-gradient-to-br ${gradient}`}
-              />
+              <div className="relative aspect-video overflow-hidden rounded-2xl border border-border">
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 60vw, 85vw"
+                  className="object-cover"
+                />
+              </div>
             </div>
           ))}
         </div>

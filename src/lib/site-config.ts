@@ -45,8 +45,8 @@ export const techStack = {
 } as const;
 
 export const serviceOptions = [
-  "Buatin Web",
-  "Buatin Mobile App",
+  "Membuat  Web",
+  "Membuat Mobile App",
   "Data Analyst",
   "Lainnya",
 ] as const;

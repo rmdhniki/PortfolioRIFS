@@ -55,6 +55,8 @@ export type SiteSettingsRow = {
   tech_stack_row1: string[];
   tech_stack_row2: string[];
   social_links: SocialLink[];
+  portrait_image_url: string | null;
+  workspace_image_url: string | null;
   updated_at: string;
 };
 

@@ -58,6 +58,8 @@ create table if not exists site_settings (
   tech_stack_row1 text[] not null default '{}',
   tech_stack_row2 text[] not null default '{}',
   social_links jsonb not null default '[]',
+  portrait_image_url text,
+  workspace_image_url text,
   updated_at timestamptz not null default now(),
   constraint site_settings_singleton check (id = 1)
 );
@@ -219,3 +221,21 @@ create policy "project_images_admin_update" on storage.objects
   for update to authenticated using (bucket_id = 'project-images');
 create policy "project_images_admin_delete" on storage.objects
   for delete to authenticated using (bucket_id = 'project-images');
+
+-- ============================================================
+-- Storage bucket for site assets: Hero/About portrait + Services
+-- workspace profile photos (public read, admin write)
+-- ============================================================
+
+insert into storage.buckets (id, name, public)
+values ('site-assets', 'site-assets', true)
+on conflict (id) do nothing;
+
+create policy "site_assets_public_read" on storage.objects
+  for select to anon, authenticated using (bucket_id = 'site-assets');
+create policy "site_assets_admin_write" on storage.objects
+  for insert to authenticated with check (bucket_id = 'site-assets');
+create policy "site_assets_admin_update" on storage.objects
+  for update to authenticated using (bucket_id = 'site-assets');
+create policy "site_assets_admin_delete" on storage.objects
+  for delete to authenticated using (bucket_id = 'site-assets');

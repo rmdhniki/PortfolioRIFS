@@ -1,10 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import type { ProjectFormState } from "./actions";
 import type { ProjectRow } from "@/lib/supabase/types";
+import { GalleryEditor } from "./gallery-editor";
+
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 function Field({
   label,
@@ -49,6 +61,9 @@ export function ProjectForm({
   );
   const fieldError = (name: string) => state?.fieldErrors?.[name];
 
+  const [slug, setSlug] = useState(project?.slug ?? "");
+  const [slugTouched, setSlugTouched] = useState(Boolean(project));
+
   return (
     <form action={formAction} className="space-y-8">
       {state?.error && (
@@ -62,17 +77,27 @@ export function ProjectForm({
           <input
             id="slug"
             name="slug"
-            defaultValue={project?.slug}
+            value={slug}
+            onChange={(e) => {
+              setSlugTouched(true);
+              setSlug(e.target.value);
+            }}
             placeholder="commerce-nova"
             required
             className={inputClass}
           />
+          <p className="text-xs text-zinc-600">
+            URL: /project/{slug || "..."}
+          </p>
         </Field>
         <Field label="Title" name="title" error={fieldError("title")}>
           <input
             id="title"
             name="title"
             defaultValue={project?.title}
+            onChange={(e) => {
+              if (!slugTouched) setSlug(slugify(e.target.value));
+            }}
             required
             className={inputClass}
           />
@@ -203,14 +228,8 @@ export function ProjectForm({
           className={inputClass}
         />
       </Field>
-      <Field label="Gallery gradients (satu per baris, opsional)" name="gallery">
-        <textarea
-          id="gallery"
-          name="gallery"
-          rows={2}
-          defaultValue={project?.gallery?.join("\n")}
-          className={inputClass}
-        />
+      <Field label="Gallery Images (opsional)" name="gallery_new">
+        <GalleryEditor initial={project?.gallery ?? []} />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">

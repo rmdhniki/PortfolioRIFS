@@ -1,280 +1,245 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Image from "next/image";
-import { ArrowDown, ChevronDown, Code2, Sparkles } from "lucide-react";
-import { Typewriter } from "@/components/motion/typewriter";
+import { motion } from "framer-motion";
+import { ArrowDown, ChevronDown, Download, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { CountUp } from "@/components/motion/count-up";
 import { Glow } from "@/components/motion/glow";
 import { SmoothLink } from "@/components/smooth-link";
+import { RotatingFoldText } from "@/components/motion/rotating-fold-text";
+import { MovingPhotoCard, PhotoFlipCard } from "@/components/motion/moving-photo-card";
+import { AboutLanyard } from "@/components/motion/about-lanyard";
+import { TechMarquee } from "@/components/sections/tech-marquee";
+import { HeroGridBackground } from "@/components/motion/hero-grid-background";
+import { useLoaderDone } from "@/lib/site-loader-state";
+import { PreloadHints } from "@/components/preload-hints";
 import type { StatItem, ServiceItem } from "@/lib/supabase/types";
 
-function FlipPortrait({ imageUrl }: { imageUrl: string | null }) {
-  if (imageUrl) {
-    return (
-      <div className="relative h-full w-full overflow-hidden rounded-[1.75rem]">
-        <Image src={imageUrl} alt="" fill sizes="280px" className="object-cover" />
-      </div>
-    );
-  }
-  return (
-    <div className="relative flex h-full w-full items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-secondary via-cream-soft to-caramel/60">
-      <span className="font-display text-6xl font-medium text-primary">MR</span>
-    </div>
-  );
-}
+/**
+ * Hero name size. From md up each half sits in a column beside the 280px photo
+ * card: column ≈ (viewport − 440px) / 2, capped by the 6xl container. "Muhammad"
+ * is ≈ 5.3em wide in Space Grotesk Bold, so size ≈ column / 5.5, max 64px.
+ */
+const heroNameClass =
+  "heading-display text-[2.75rem] sm:text-6xl md:text-[clamp(1.875rem,calc(9vw_-_2.5rem),4rem)]";
 
-function FlipWorkspace({ imageUrl }: { imageUrl: string | null }) {
-  if (imageUrl) {
-    return (
-      <div className="relative h-full w-full overflow-hidden rounded-[1.75rem]">
-        <Image src={imageUrl} alt="" fill sizes="280px" className="object-cover" />
-      </div>
-    );
-  }
-  return (
-    <div className="relative flex h-full w-full items-center justify-center rounded-[1.75rem] bg-gradient-to-br from-primary via-[#4a3220] to-espresso">
-      <Code2 className="size-16 text-cream/80" strokeWidth={1.25} />
-    </div>
-  );
+/** Entrance animation that waits for the loading screen, so it isn't played behind it. */
+function entrance(revealed: boolean, delay: number, y = 32) {
+  return {
+    initial: { opacity: 0, y },
+    animate: revealed ? { opacity: 1, y: 0 } : { opacity: 0, y },
+    transition: { duration: 0.8, delay: revealed ? delay : 0, ease: [0.16, 1, 0.3, 1] as const },
+  };
 }
-
-const PHASE = {
-  heroEnd: 0.22,
-  flip1End: 0.28,
-  servicesEnd: 0.68,
-  flip2End: 0.74,
-};
 
 export function HeroServicesAbout({
-  name,
   roles,
+  cvUrl,
   aboutTitle,
   aboutEducation,
   aboutDescription,
   stats,
   services,
-  portraitImageUrl,
-  workspaceImageUrl,
+  heroImageUrl,
+  servicesImageUrl,
+  aboutFrontImageUrl,
+  aboutBackImageUrl,
+  lanyardStrapImageUrl,
+  techRow1,
+  techRow2,
 }: {
-  name: string;
   roles: string[];
+  cvUrl: string | null;
   aboutTitle: string;
   aboutEducation: string;
   aboutDescription: string;
   stats: StatItem[];
   services: ServiceItem[];
-  portraitImageUrl: string | null;
-  workspaceImageUrl: string | null;
+  heroImageUrl: string | null;
+  servicesImageUrl: string | null;
+  aboutFrontImageUrl: string | null;
+  aboutBackImageUrl: string | null;
+  lanyardStrapImageUrl: string | null;
+  techRow1: string[];
+  techRow2: string[];
 }) {
-  const groupRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: groupRef,
-    offset: ["start start", "end end"],
-  });
-
-  const rotateY = useTransform(
-    scrollYProgress,
-    [0, PHASE.heroEnd, PHASE.flip1End, PHASE.servicesEnd, PHASE.flip2End, 1],
-    [0, 0, 180, 180, 360, 360]
-  );
-  const marginLeft = useTransform(
-    scrollYProgress,
-    [0, PHASE.heroEnd, PHASE.flip1End, 1],
-    ["38%", "38%", "60%", "60%"]
-  );
-
   const [openIndex, setOpenIndex] = useState(0);
+  const servicesRef = useRef<HTMLElement>(null);
+  const revealed = useLoaderDone();
 
   return (
-    <div ref={groupRef} className="relative">
-      {/* Sticky flip image — shared across Hero + Services + About, desktop only */}
-      <div className="pointer-events-none absolute inset-0 z-20 hidden md:block">
-        <div className="sticky top-[16vh] mx-auto max-w-6xl px-6 md:px-10">
-          <motion.div
-            style={{ marginLeft, perspective: 1200 }}
-            className="relative aspect-4/5 w-[280px]"
-          >
-            <motion.div
-              style={{ rotateY, transformStyle: "preserve-3d" }}
-              className="relative h-full w-full rounded-[1.75rem] shadow-2xl shadow-espresso/20"
-            >
-              <div style={{ backfaceVisibility: "hidden" }} className="absolute inset-0">
-                <FlipPortrait imageUrl={portraitImageUrl} />
-              </div>
-              <div
-                style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                className="absolute inset-0"
+    <div className="relative">
+      <div className="relative">
+        {/* Desktop: the card flips from the Hero into Services. */}
+        <MovingPhotoCard
+          frontUrl={heroImageUrl}
+          backUrl={servicesImageUrl}
+          servicesRef={servicesRef}
+        />
+
+        <section
+          id="home"
+          className="relative isolate flex min-h-[100svh] flex-col justify-center overflow-x-clip pt-28 pb-16"
+        >
+          <HeroGridBackground />
+          <Glow className="-top-24 -right-24 size-[28rem] bg-primary/10" />
+          <div className="relative z-10 mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 px-6 md:grid-cols-[minmax(0,1fr)_280px_minmax(0,1fr)] md:items-center md:gap-10 md:px-10">
+            <div className="min-w-0 text-center md:text-right">
+              <motion.p {...entrance(revealed, 0.1, 16)} className="eyebrow text-primary/90">
+                Welcome to Website Portfolio
+              </motion.p>
+              <motion.h1
+                {...entrance(revealed, 0.25)}
+                className={`mt-3 text-foreground ${heroNameClass}`}
               >
-                <FlipWorkspace imageUrl={workspaceImageUrl} />
-              </div>
+                Muhammad Rifki
+                <span className="sr-only"> Ramadhani</span>
+              </motion.h1>
+            </div>
+
+            {/* Tablet & mobile: static card, tap to flip. On desktop this column stays
+                empty and the moving card sits over it. */}
+            <motion.div {...entrance(revealed, 0.45, 24)} className="mx-auto mb-6 md:mb-0 md:w-full">
+              <PhotoFlipCard frontUrl={heroImageUrl} backUrl={servicesImageUrl} className="lg:hidden" />
             </motion.div>
 
-            <div className="absolute -bottom-6 -left-8 flex size-20 items-center justify-center rounded-full bg-caramel font-display text-xl text-espresso shadow-lg">
-              Hi
+            <div className="min-w-0 text-center md:text-left">
+              {/* Second half of the name; the full name lives in the <h1> for screen readers. */}
+              <motion.p
+                {...entrance(revealed, 0.35)}
+                aria-hidden
+                className={`text-foreground ${heroNameClass}`}
+              >
+                Ramadhani
+              </motion.p>
+              <motion.div
+                {...entrance(revealed, 0.6, 20)}
+                className="mt-4 flex min-h-12 items-center justify-center font-display md:justify-start"
+              >
+                {revealed && <RotatingFoldText words={roles} />}
+              </motion.div>
             </div>
+          </div>
+
+          <motion.div
+            {...entrance(revealed, 1.0, 0)}
+            className="relative z-10 mt-10 flex flex-col items-center gap-3 md:absolute md:bottom-8 md:left-1/2 md:mt-0 md:-translate-x-1/2"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <SmoothLink
+                href="/#projects"
+                className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-button text-primary-foreground transition-transform hover:scale-105"
+              >
+                Explore My Work
+                <Sparkles className="size-4 transition-transform group-hover:rotate-12" />
+              </SmoothLink>
+              {cvUrl && (
+                <a
+                  href={cvUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-6 py-3 text-sm font-button text-primary shadow-[0_0_20px_-6px_rgba(48,191,191,0.6)] transition-colors hover:bg-primary/20"
+                >
+                  Download CV
+                  <Download className="size-4" />
+                </a>
+              )}
+            </div>
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="text-muted-foreground"
+            >
+              <ArrowDown className="size-4" />
+            </motion.div>
           </motion.div>
-        </div>
+        </section>
+
+        <section
+          ref={servicesRef}
+          id="services"
+          className="relative overflow-x-clip bg-card/40 py-24 md:py-32 lg:min-h-[100svh]"
+        >
+          <Glow className="top-1/4 -right-32 size-[26rem] bg-primary/10" />
+          <div className="relative mx-auto max-w-6xl px-6 md:px-10">
+            {/* On desktop the text keeps to the left half; the card lands centre-right. */}
+            <div className="max-w-xl lg:max-w-[min(36rem,50%)]">
+              <Reveal>
+                <p className="eyebrow">
+                  What I Offer
+                </p>
+              </Reveal>
+              <Reveal delay={0.1}>
+                <h2 className="mt-3 heading-section text-foreground">
+                  What Can I Do For You
+                </h2>
+              </Reveal>
+              <Reveal delay={0.2}>
+                <p className="mt-4 text-muted-foreground md:text-lg">
+                  Sebagai fullstack developer, saya membantu mewujudkan ide jadi
+                  produk digital yang utuh — dari sisi server sampai yang dilihat
+                  pengguna.
+                </p>
+              </Reveal>
+
+              <div className="mt-10 divide-y divide-border border-t border-border">
+                {services.map((service, i) => {
+                  const isOpen = openIndex === i;
+                  return (
+                    <div key={service.title}>
+                      <button
+                        type="button"
+                        onClick={() => setOpenIndex(isOpen ? -1 : i)}
+                        className="flex w-full items-center justify-between gap-4 py-5 text-left"
+                        aria-expanded={isOpen}
+                      >
+                        <span className="font-display text-xl text-foreground md:text-2xl">
+                          {i + 1}. {service.title}
+                        </span>
+                        <motion.span
+                          animate={{ rotate: isOpen ? 180 : 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="shrink-0 text-muted-foreground"
+                        >
+                          <ChevronDown className="size-5" />
+                        </motion.span>
+                      </button>
+                      <motion.div
+                        initial={false}
+                        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                      >
+                        <p className="pb-5 text-sm text-muted-foreground md:text-base">
+                          {service.description}
+                        </p>
+                      </motion.div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      {/* Hero chapter */}
-      <section
-        id="home"
-        className="relative flex min-h-[100svh] items-center overflow-x-hidden pt-28 pb-16"
-      >
-        <Glow className="-top-24 -right-24 size-[28rem] bg-caramel/20" />
-        <Glow className="-bottom-32 -left-24 size-96 bg-secondary/60" />
-        <div className="relative mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-6 md:grid-cols-[minmax(0,1fr)_280px_minmax(0,1fr)] md:px-10">
-          <div className="min-w-0 text-center md:text-right">
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-sm uppercase tracking-[0.3em] text-muted-foreground"
-            >
-              {name}
-            </motion.p>
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-2 font-condensed text-5xl leading-[0.95] font-semibold tracking-tight text-foreground uppercase md:text-6xl lg:text-7xl"
-            >
-              FULLSTACK
-            </motion.h1>
-          </div>
+      <TechMarquee items={techRow1} />
 
-          <div className="mx-auto">
-            <div className="relative aspect-4/5 w-[220px] overflow-hidden rounded-[1.75rem] shadow-xl shadow-espresso/20 md:hidden">
-              <FlipPortrait imageUrl={portraitImageUrl} />
-            </div>
-          </div>
-
-          <div className="min-w-0 text-center md:text-left">
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="font-condensed text-5xl leading-[0.95] font-semibold tracking-tight text-foreground uppercase md:text-6xl lg:text-7xl"
-            >
-              DEVELOPER
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="mx-auto mt-4 max-w-xs font-display text-xl text-caramel italic md:mx-0"
-            >
-              I am <Typewriter words={roles} />
-            </motion.p>
-          </div>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
-          className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 md:bottom-8"
-        >
-          <SmoothLink
-            href="/#projects"
-            className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-105"
-          >
-            Explore My Work
-            <Sparkles className="size-4 transition-transform group-hover:rotate-12" />
-          </SmoothLink>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            className="text-muted-foreground"
-          >
-            <ArrowDown className="size-4" />
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Services chapter */}
-      <section
-        id="services"
-        className="relative overflow-x-hidden bg-cream-soft/40 py-24 md:min-h-[85vh] md:py-32"
-      >
-        <Glow className="top-1/4 -right-32 size-[26rem] bg-primary/10" />
-        <div className="relative mx-auto max-w-6xl px-6 md:px-10">
-          <div className="max-w-xl">
-            <Reveal>
-              <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
-                What I Offer
-              </p>
-            </Reveal>
-            <Reveal delay={0.1}>
-              <h2 className="mt-3 font-display text-4xl font-medium text-foreground md:text-5xl">
-                What Can I Do For You
-              </h2>
-            </Reveal>
-            <Reveal delay={0.2}>
-              <p className="mt-4 text-muted-foreground md:text-lg">
-                Sebagai fullstack developer, saya membantu mewujudkan ide
-                jadi produk digital yang utuh — dari sisi server sampai
-                yang dilihat pengguna.
-              </p>
-            </Reveal>
-
-            <div className="mt-10 divide-y divide-border border-t border-border">
-              {services.map((service, i) => {
-                const isOpen = openIndex === i;
-                return (
-                  <div key={service.title}>
-                    <button
-                      type="button"
-                      onClick={() => setOpenIndex(isOpen ? -1 : i)}
-                      className="flex w-full items-center justify-between gap-4 py-5 text-left"
-                    >
-                      <span className="font-display text-xl text-foreground md:text-2xl">
-                        {i + 1}. {service.title}
-                      </span>
-                      <motion.span
-                        animate={{ rotate: isOpen ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="shrink-0 text-muted-foreground"
-                      >
-                        <ChevronDown className="size-5" />
-                      </motion.span>
-                    </button>
-                    <motion.div
-                      initial={false}
-                      animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="overflow-hidden"
-                    >
-                      <p className="pb-5 text-sm text-muted-foreground md:text-base">
-                        {service.description}
-                      </p>
-                    </motion.div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* About chapter */}
       <section
         id="about"
-        className="relative overflow-x-hidden py-24 md:min-h-[85vh] md:py-32"
+        className="relative overflow-x-clip py-24 md:min-h-[85vh] md:py-32"
       >
-        <Glow className="-bottom-24 -left-32 size-[26rem] bg-caramel/15" />
-        <div className="relative mx-auto max-w-6xl px-6 md:px-10">
-          <div className="max-w-xl space-y-6">
+        <Glow className="-bottom-24 -left-32 size-[26rem] bg-primary/10" />
+        <div className="relative mx-auto grid max-w-6xl gap-12 px-6 md:grid-cols-2 md:items-center md:px-10">
+          <div className="order-2 space-y-6 md:order-1">
             <Reveal>
-              <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
+              <p className="eyebrow">
                 {aboutTitle}
               </p>
             </Reveal>
             <Reveal delay={0.1}>
-              <h2 className="font-display text-3xl font-medium text-foreground md:text-4xl">
+              <h2 className="heading-section text-foreground">
                 {aboutEducation}
               </h2>
             </Reveal>
@@ -283,12 +248,11 @@ export function HeroServicesAbout({
                 {aboutDescription}
               </p>
             </Reveal>
-
             <Reveal delay={0.3}>
               <div className="grid grid-cols-3 gap-6 border-t border-border pt-6">
                 {stats.map((stat) => (
                   <div key={stat.label}>
-                    <p className="font-display text-3xl font-medium text-primary md:text-4xl">
+                    <p className="font-display text-3xl font-semibold text-primary md:text-4xl">
                       <CountUp value={stat.value} suffix={stat.suffix} />
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
@@ -296,9 +260,25 @@ export function HeroServicesAbout({
                 ))}
               </div>
             </Reveal>
+            <Reveal delay={0.4}>
+              <p className="text-xs text-muted-foreground">
+                Tarik, ayunkan, atau klik kartu untuk melihat sisi lainnya.
+              </p>
+            </Reveal>
+          </div>
+
+          <div className="order-1 h-105 md:order-2 md:h-150">
+            <AboutLanyard
+              frontImage={aboutFrontImageUrl}
+              backImage={aboutBackImageUrl}
+              strapImage={lanyardStrapImageUrl}
+            />
+            <PreloadHints urls={[aboutFrontImageUrl, aboutBackImageUrl, lanyardStrapImageUrl]} />
           </div>
         </div>
       </section>
+
+      <TechMarquee items={techRow2} />
     </div>
   );
 }

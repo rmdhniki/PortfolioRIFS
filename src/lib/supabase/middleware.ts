@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSupabaseConfigured } from "./is-configured";
+import { getAdminUser } from "./is-admin";
 import type { Database } from "./types";
 
 export async function updateSession(request: NextRequest) {
@@ -31,21 +32,20 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Logged in is not enough — the user must be on the admin allowlist.
+  const admin = await getAdminUser(supabase);
 
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
   const isLoginRoute = request.nextUrl.pathname === "/admin/login";
 
-  if (isAdminRoute && !isLoginRoute && !user) {
+  if (isAdminRoute && !isLoginRoute && !admin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     url.searchParams.set("redirectTo", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  if (isLoginRoute && user) {
+  if (isLoginRoute && admin) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin";
     url.searchParams.delete("redirectTo");

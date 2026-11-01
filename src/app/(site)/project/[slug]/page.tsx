@@ -8,6 +8,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { GalleryCarousel } from "@/components/motion/gallery-carousel";
 import { PhoneMockup } from "@/components/motion/device-mockup";
 import { getAdjacentProject, getProjectBySlug } from "@/lib/data/projects";
+import { galleryImages } from "@/lib/project-images";
 
 export async function generateMetadata({
   params,
@@ -41,6 +42,7 @@ export default async function ProjectDetailPage({
     { label: "Client", value: project.client },
     { label: "Duration", value: project.duration },
   ];
+  const gallery = galleryImages(project.gallery);
   const storyBlocks = [
     { title: "Overview", text: project.overview },
     { title: "Problem", text: project.problem },
@@ -65,7 +67,7 @@ export default async function ProjectDetailPage({
             </span>
           </Reveal>
           <Reveal delay={0.2}>
-            <h1 className="mt-4 font-display text-4xl font-medium text-foreground md:text-6xl">
+            <h1 className="mt-4 font-display text-4xl font-semibold text-foreground md:text-6xl">
               {project.title}
             </h1>
           </Reveal>
@@ -94,16 +96,16 @@ export default async function ProjectDetailPage({
 
         <Reveal delay={0.5} className="mx-auto mt-12 max-w-6xl px-6 md:px-10">
           {project.category === "Mobile Development" ? (
-            <div className="flex justify-center rounded-[2rem] border border-border bg-card py-12 shadow-2xl shadow-espresso/10">
+            <div className="flex justify-center rounded-[2rem] border border-border bg-card py-12 shadow-2xl shadow-black/50">
               <PhoneMockup
                 gradient={project.gradient}
                 imageUrl={project.image_url}
-                className="w-[260px]"
+                className="w-65"
               />
             </div>
           ) : (
             <div
-              className={`relative aspect-video w-full overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br shadow-2xl shadow-espresso/10 ${project.gradient}`}
+              className={`relative aspect-video w-full overflow-hidden rounded-[2rem] border border-border bg-linear-to-br shadow-2xl shadow-black/50 ${project.gradient}`}
             >
               {project.image_url && (
                 <Image
@@ -123,7 +125,7 @@ export default async function ProjectDetailPage({
       <section className="mx-auto max-w-3xl space-y-16 px-6 py-16 md:px-10">
         {storyBlocks.map((block) => (
           <Reveal key={block.title}>
-            <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
+            <h2 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
               {block.title}
             </h2>
             <p className="mt-4 leading-relaxed text-muted-foreground md:text-lg">
@@ -136,7 +138,7 @@ export default async function ProjectDetailPage({
       <section className="bg-card py-16">
         <div className="mx-auto max-w-4xl px-6 md:px-10">
           <Reveal>
-            <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
+            <h2 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
               Features
             </h2>
           </Reveal>
@@ -158,7 +160,7 @@ export default async function ProjectDetailPage({
       <section className="py-16">
         <div className="mx-auto max-w-4xl px-6 md:px-10">
           <Reveal>
-            <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
+            <h2 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
               Technology
             </h2>
           </Reveal>
@@ -175,16 +177,16 @@ export default async function ProjectDetailPage({
         </div>
       </section>
 
-      {project.gallery.length > 0 && (
+      {gallery.length > 0 && (
         <section className="py-16">
           <div className="mx-auto max-w-5xl px-6 md:px-10">
             <Reveal>
-              <h2 className="font-display text-2xl font-medium text-foreground md:text-3xl">
+              <h2 className="font-display text-2xl font-semibold text-foreground md:text-3xl">
                 Gallery
               </h2>
             </Reveal>
             <Reveal delay={0.1} className="mt-8">
-              <GalleryCarousel slides={[...project.gallery]} />
+              <GalleryCarousel slides={gallery} />
             </Reveal>
           </div>
         </section>
@@ -198,7 +200,7 @@ export default async function ProjectDetailPage({
                 href={project.github}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-button text-foreground transition-colors hover:bg-secondary"
               >
                 <FaGithub className="size-4" /> Source Code
               </a>
@@ -208,7 +210,7 @@ export default async function ProjectDetailPage({
                 href={project.demo}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-button text-primary-foreground transition-transform hover:scale-105"
               >
                 Live Demo <ArrowUpRight className="size-4" />
               </a>
@@ -219,12 +221,12 @@ export default async function ProjectDetailPage({
 
       <section className="border-t border-border py-16">
         <Reveal className="mx-auto max-w-4xl px-6 text-center md:px-10">
-          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
+          <p className="eyebrow">
             Next Project
           </p>
           <Link
             href={`/project/${next.slug}`}
-            className="group mt-4 inline-flex items-center gap-3 font-display text-3xl font-medium text-foreground transition-colors hover:text-primary md:text-5xl"
+            className="group mt-4 inline-flex items-center gap-3 font-display text-3xl font-semibold text-foreground transition-colors hover:text-primary md:text-5xl"
           >
             {next.title}
             <ArrowUpRight className="size-7 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
+import { getAdminUser } from "@/lib/supabase/is-admin";
 import { Sidebar } from "@/components/admin/sidebar";
 import { SupabaseSetupNotice } from "@/components/admin/setup-notice";
 
@@ -19,9 +20,7 @@ export default async function DashboardLayout({
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAdminUser(supabase);
 
   if (!user) {
     redirect("/admin/login");

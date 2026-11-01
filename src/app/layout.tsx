@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Oswald, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, Geist_Mono } from "next/font/google";
 import { MotionProvider } from "@/providers/motion-provider";
+import { loaderSkipScript } from "@/lib/site-loader";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-display",
+// Headings & buttons: Space Grotesk 600–700. Body & navigation: Inter 400–500.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  axes: ["opsz", "SOFT", "WONK"],
-  weight: "variable",
-  style: ["normal", "italic"],
+  weight: ["500", "600", "700"],
+  display: "swap",
 });
 
 const inter = Inter({
-  variable: "--font-body",
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const oswald = Oswald({
-  variable: "--font-condensed",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -42,8 +38,16 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${fraunces.variable} ${inter.variable} ${oswald.variable} ${geistMono.variable} h-full antialiased`}
+      // The inline script below may add a class before hydration.
+      suppressHydrationWarning
+      className={`dark ${spaceGrotesk.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: loaderSkipScript }} />
+        <noscript>
+          <style>{"#site-loader{display:none!important}"}</style>
+        </noscript>
+      </head>
       <body
         suppressHydrationWarning
         className="min-h-full bg-background text-foreground font-sans"

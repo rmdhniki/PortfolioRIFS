@@ -3,17 +3,27 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Award,
+  BriefcaseBusiness,
   FolderKanban,
+  Images,
+  Layers,
   LayoutDashboard,
   LogOut,
   Mail,
   Settings,
+  Sparkles,
 } from "lucide-react";
 import { logout } from "@/app/admin/actions";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/hero", label: "Hero", icon: Sparkles },
+  { href: "/admin/photos", label: "Photos", icon: Images },
   { href: "/admin/projects", label: "Projects", icon: FolderKanban },
+  { href: "/admin/experiences", label: "Experience", icon: BriefcaseBusiness },
+  { href: "/admin/certifications", label: "Certifications", icon: Award },
+  { href: "/admin/tech-stack", label: "Tech Stack", icon: Layers },
   { href: "/admin/messages", label: "Messages", icon: Mail },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

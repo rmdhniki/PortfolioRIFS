@@ -36,6 +36,32 @@ export type ContactMessageRow = {
 export type StatItem = { label: string; value: number; suffix: string };
 export type ServiceItem = { title: string; description: string };
 export type SocialLink = { label: string; href: string; icon: string };
+export type CertificationItem = {
+  id: string;
+  title: string;
+  description: string;
+  credential_id: string;
+  verify_url: string | null;
+  image_url: string | null;
+  /** Published (shown on the site) or hidden. */
+  is_visible: boolean;
+  order_index: number;
+};
+export type ExperienceItem = {
+  id: string;
+  role: string;
+  company: string;
+  /** Legacy free-text period, superseded by start_date/end_date. */
+  period: string;
+  description: string;
+  image_url: string | null;
+  /** ISO date (YYYY-MM-DD); only year and month are meaningful. */
+  start_date: string | null;
+  end_date: string | null;
+  is_current: boolean;
+  is_visible: boolean;
+  order_index: number;
+};
 
 export type SiteSettingsRow = {
   id: number;
@@ -55,8 +81,12 @@ export type SiteSettingsRow = {
   tech_stack_row1: string[];
   tech_stack_row2: string[];
   social_links: SocialLink[];
-  portrait_image_url: string | null;
-  workspace_image_url: string | null;
+  hero_image_url: string | null;
+  services_image_url: string | null;
+  about_front_image_url: string | null;
+  about_back_image_url: string | null;
+  lanyard_strap_image_url: string | null;
+  cv_url: string | null;
   updated_at: string;
 };
 
@@ -83,9 +113,26 @@ export type Database = {
         Update: Partial<SiteSettingsRow>;
         Relationships: [];
       };
+      certifications: {
+        Row: CertificationItem;
+        Insert: Omit<CertificationItem, "id"> & Partial<Pick<CertificationItem, "id">>;
+        Update: Partial<Omit<CertificationItem, "id">>;
+        Relationships: [];
+      };
+      experiences: {
+        Row: ExperienceItem;
+        Insert: Omit<ExperienceItem, "id"> & Partial<Pick<ExperienceItem, "id">>;
+        Update: Partial<Omit<ExperienceItem, "id">>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

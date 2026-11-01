@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import type { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/require-admin";
 import { uploadFile } from "@/lib/supabase/storage";
 import { projectSchema } from "@/lib/validations/project";
 
@@ -64,7 +65,7 @@ export async function createProject(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
 
   let imageUrl: string | null = null;
   let gallery: string[] = [];
@@ -107,7 +108,7 @@ export async function updateProject(
     };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
 
   let imageUrl: string | null | undefined;
   let gallery: string[];
@@ -140,7 +141,7 @@ export async function updateProject(
 }
 
 export async function deleteProject(id: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("projects").delete().eq("id", id);
 
   if (error) {

@@ -7,10 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-display);
-  --font-condensed: var(--font-condensed);
   --color-cream: var(--cream);
   --color-cream-soft: var(--cream-soft);
   --color-espresso: var(--espresso);
@@ -95,37 +95,37 @@
 }
 
 .dark {
-  --background: #211712;
-  --foreground: #f3ead9;
-  --card: #2b1d13;
-  --card-foreground: #f3ead9;
-  --popover: #2b1d13;
-  --popover-foreground: #f3ead9;
-  --primary: #d9b48a;
-  --primary-foreground: #2b1d13;
-  --secondary: #3a2a1c;
-  --secondary-foreground: #f3ead9;
-  --muted: #3a2a1c;
-  --muted-foreground: #b6a58c;
-  --accent: #b4855a;
-  --accent-foreground: #211712;
-  --destructive: #c65c47;
-  --border: #3f2e20;
-  --input: #3f2e20;
-  --ring: #b4855a;
-  --chart-1: #d9b48a;
-  --chart-2: #b6a58c;
-  --chart-3: #b4855a;
-  --chart-4: #c9a876;
-  --chart-5: #3f2e20;
-  --sidebar: #2b1d13;
-  --sidebar-foreground: #f3ead9;
-  --sidebar-primary: #d9b48a;
-  --sidebar-primary-foreground: #211712;
-  --sidebar-accent: #3a2a1c;
-  --sidebar-accent-foreground: #f3ead9;
-  --sidebar-border: #3f2e20;
-  --sidebar-ring: #b4855a;
+  --background: #0a0a0a;
+  --foreground: #f4f7f7;
+  --card: #101313;
+  --card-foreground: #f4f7f7;
+  --popover: #101313;
+  --popover-foreground: #f4f7f7;
+  --primary: #30bfbf;
+  --primary-foreground: #041010;
+  --secondary: #172020;
+  --secondary-foreground: #d9e6e6;
+  --muted: #151b1b;
+  --muted-foreground: #8fa3a3;
+  --accent: #30bfbf;
+  --accent-foreground: #041010;
+  --destructive: #d95c4a;
+  --border: #1f2a2a;
+  --input: #1f2a2a;
+  --ring: #30bfbf;
+  --chart-1: #30bfbf;
+  --chart-2: #1f8a8a;
+  --chart-3: #8fa3a3;
+  --chart-4: #4dd6d6;
+  --chart-5: #1f2a2a;
+  --sidebar: #101313;
+  --sidebar-foreground: #f4f7f7;
+  --sidebar-primary: #30bfbf;
+  --sidebar-primary-foreground: #041010;
+  --sidebar-accent: #172020;
+  --sidebar-accent-foreground: #d9e6e6;
+  --sidebar-border: #1f2a2a;
+  --sidebar-ring: #30bfbf;
 }
 
 @layer base {
@@ -138,6 +138,64 @@
   html {
     @apply font-sans;
   }
+  /* Typography: headings & buttons use Space Grotesk, body text Inter. */
+  body {
+    font-weight: 400;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  button {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  /* Loading screen already seen this session (set by the inline head script). */
+  html.rifs-loader-skip #site-loader {
+    display: none;
+  }
+}
+
+/* Consistent type scale for section headings (fluid between mobile and desktop). */
+@utility heading-section {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-size: clamp(1.875rem, 1.35rem + 1.8vw, 2.75rem);
+}
+
+/* Large display heading (Hero). Size is set per use, since layouts differ. */
+@utility heading-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+/* Small uppercase label above section headings. */
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Button-like links (CTAs rendered as <a>). */
+@utility font-button {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 @layer utilities {
@@ -165,6 +223,84 @@
 
   .animate-marquee-right {
     animation: marquee-right 36s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee-left,
+    .animate-marquee-right {
+      animation: none;
+    }
+  }
+
+  /* Loading screen image: soft fade-in, then a gentle, irregular flicker at low opacity. */
+  @keyframes loader-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 0.32;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes loader-flicker {
+    0%,
+    100% {
+      opacity: 0.32;
+    }
+    8% {
+      opacity: 0.22;
+    }
+    10% {
+      opacity: 0.3;
+    }
+    46% {
+      opacity: 0.34;
+    }
+    50% {
+      opacity: 0.2;
+    }
+    53% {
+      opacity: 0.31;
+    }
+    80% {
+      opacity: 0.26;
+    }
+  }
+
+  .loader-flicker {
+    opacity: 0.32;
+    animation:
+      loader-fade-in 0.7s ease-out both,
+      loader-flicker 3.2s ease-in-out 0.7s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .loader-flicker {
+      animation: loader-fade-in 0.3s ease-out both;
+    }
+  }
+
+  /* Gentle hover for floating cards. */
+  @keyframes float-y {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  .float-y {
+    animation: float-y 6s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .float-y {
+      animation: none;
+    }
   }
 
   .bg-grain {

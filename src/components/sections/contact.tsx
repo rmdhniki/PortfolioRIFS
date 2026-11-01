@@ -56,18 +56,18 @@ export function Contact({
   return (
     <section
       id="contact"
-      className="relative overflow-x-hidden bg-cream-soft/40 py-24 md:py-32"
+      className="relative overflow-x-clip bg-card/40 py-24 md:py-32"
     >
-      <Glow className="top-0 -right-40 size-[30rem] bg-caramel/15" />
+      <Glow className="top-0 -right-40 size-[30rem] bg-primary/15" />
       <Glow className="-bottom-24 left-0 size-80 bg-secondary/60" />
       <div className="relative mx-auto max-w-2xl px-6 text-center md:px-10">
         <Reveal>
-          <p className="text-sm uppercase tracking-[0.3em] text-muted-foreground">
+          <p className="eyebrow">
             Contact
           </p>
         </Reveal>
         <Reveal delay={0.1}>
-          <h2 className="mt-3 font-display text-4xl font-medium text-foreground md:text-6xl">
+          <h2 className="mt-3 font-display text-4xl font-semibold text-foreground md:text-6xl">
             Let&apos;s Work Together
           </h2>
         </Reveal>
@@ -167,7 +167,7 @@ export function Contact({
           <button
             type="submit"
             disabled={status === "loading"}
-            className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 sm:w-auto"
+            className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-button text-primary-foreground transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:scale-100 sm:w-auto"
           >
             {status === "loading" ? (
               <>

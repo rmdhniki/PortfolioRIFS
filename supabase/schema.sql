@@ -58,10 +58,43 @@ create table if not exists site_settings (
   tech_stack_row1 text[] not null default '{}',
   tech_stack_row2 text[] not null default '{}',
   social_links jsonb not null default '[]',
-  portrait_image_url text,
-  workspace_image_url text,
+  hero_image_url text,
+  services_image_url text,
+  about_front_image_url text,
+  about_back_image_url text,
+  lanyard_strap_image_url text,
+  cv_url text,
   updated_at timestamptz not null default now(),
   constraint site_settings_singleton check (id = 1)
+);
+
+create table if not exists certifications (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text not null default '',
+  credential_id text not null default '',
+  verify_url text,
+  image_url text,
+  is_visible boolean not null default true,
+  order_index integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists experiences (
+  id uuid primary key default gen_random_uuid(),
+  role text not null,
+  company text not null,
+  period text not null default '', -- legacy, digantikan start_date/end_date
+  description text not null default '',
+  image_url text,
+  start_date date,
+  end_date date,
+  is_current boolean not null default false,
+  is_visible boolean not null default true,
+  order_index integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 -- ============================================================
@@ -86,42 +119,101 @@ create trigger site_settings_set_updated_at
   before update on site_settings
   for each row execute function set_updated_at();
 
+drop trigger if exists certifications_set_updated_at on certifications;
+create trigger certifications_set_updated_at
+  before update on certifications
+  for each row execute function set_updated_at();
+
+drop trigger if exists experiences_set_updated_at on experiences;
+create trigger experiences_set_updated_at
+  before update on experiences
+  for each row execute function set_updated_at();
+
 -- ============================================================
--- Row Level Security
--- Only one admin account ever authenticates against this project
--- (created manually, no public sign-up), so any `authenticated`
--- session is trusted with full write access.
+-- Admin allowlist
+-- Being `authenticated` is NOT enough: the anon key is public, so anyone could
+-- sign up. Writes require the user to be listed in `public.admins`.
+-- Also disable sign-ups: Authentication → Sign In / Providers →
+-- "Allow new users to sign up" = OFF.
+-- ============================================================
+
+create table if not exists public.admins (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+
+alter table public.admins enable row level security;
+-- No policies on purpose: not readable or writable through the API.
+revoke all on public.admins from anon, authenticated;
+
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.admins where user_id = auth.uid());
+$$;
+
+revoke all on function public.is_admin() from public;
+grant execute on function public.is_admin() to anon, authenticated;
+
+-- ============================================================
+-- Row Level Security — public read, admin (is_admin()) write
 -- ============================================================
 
 alter table projects enable row level security;
 alter table contact_messages enable row level security;
 alter table site_settings enable row level security;
+alter table certifications enable row level security;
+alter table experiences enable row level security;
+
+-- certifications: public can read, only the admin can write
+create policy "certifications_public_read" on certifications
+  for select to anon, authenticated using (true);
+create policy "certifications_admin_write" on certifications
+  for insert to authenticated with check (public.is_admin());
+create policy "certifications_admin_update" on certifications
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "certifications_admin_delete" on certifications
+  for delete to authenticated using (public.is_admin());
+
+-- experiences: public can read, only the admin can write
+create policy "experiences_public_read" on experiences
+  for select to anon, authenticated using (true);
+create policy "experiences_admin_write" on experiences
+  for insert to authenticated with check (public.is_admin());
+create policy "experiences_admin_update" on experiences
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "experiences_admin_delete" on experiences
+  for delete to authenticated using (public.is_admin());
 
 -- projects: public can read, only the admin can write
 create policy "projects_public_read" on projects
   for select to anon, authenticated using (true);
 create policy "projects_admin_write" on projects
-  for insert to authenticated with check (true);
+  for insert to authenticated with check (public.is_admin());
 create policy "projects_admin_update" on projects
-  for update to authenticated using (true) with check (true);
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "projects_admin_delete" on projects
-  for delete to authenticated using (true);
+  for delete to authenticated using (public.is_admin());
 
 -- contact_messages: anyone can submit, only the admin can read/manage
 create policy "messages_public_insert" on contact_messages
   for insert to anon, authenticated with check (true);
 create policy "messages_admin_read" on contact_messages
-  for select to authenticated using (true);
+  for select to authenticated using (public.is_admin());
 create policy "messages_admin_update" on contact_messages
-  for update to authenticated using (true) with check (true);
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 create policy "messages_admin_delete" on contact_messages
-  for delete to authenticated using (true);
+  for delete to authenticated using (public.is_admin());
 
 -- site_settings: public can read, only the admin can update
 create policy "settings_public_read" on site_settings
   for select to anon, authenticated using (true);
 create policy "settings_admin_update" on site_settings
-  for update to authenticated using (true) with check (true);
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 
 -- ============================================================
 -- Seed data — migrated from src/lib/projects.ts and src/lib/site-config.ts
@@ -205,6 +297,18 @@ values (
 )
 on conflict (id) do nothing;
 
+insert into certifications (title, description, credential_id, order_index)
+values
+  ('Certification Placeholder 1', 'Ganti judul, deskripsi, ID, dan gambar lewat dashboard admin.', 'CERT-0001', 0),
+  ('Certification Placeholder 2', 'Ganti judul, deskripsi, ID, dan gambar lewat dashboard admin.', 'CERT-0002', 1),
+  ('Certification Placeholder 3', 'Ganti judul, deskripsi, ID, dan gambar lewat dashboard admin.', 'CERT-0003', 2);
+
+insert into experiences (role, company, description, start_date, end_date, is_current, order_index)
+values
+  ('Fullstack Developer', 'Company Placeholder', 'Ganti data pengalaman ini lewat dashboard admin.', '2024-01-01', null, true, 0),
+  ('Web Developer', 'Company Placeholder', 'Ganti data pengalaman ini lewat dashboard admin.', '2022-01-01', '2024-01-01', false, 1),
+  ('Freelance Developer', 'Self-employed', 'Ganti data pengalaman ini lewat dashboard admin.', '2021-01-01', null, true, 2);
+
 -- ============================================================
 -- Storage bucket for project images (public read, admin write)
 -- ============================================================
@@ -216,11 +320,13 @@ on conflict (id) do nothing;
 create policy "project_images_public_read" on storage.objects
   for select to anon, authenticated using (bucket_id = 'project-images');
 create policy "project_images_admin_write" on storage.objects
-  for insert to authenticated with check (bucket_id = 'project-images');
+  for insert to authenticated with check (bucket_id = 'project-images' and public.is_admin());
 create policy "project_images_admin_update" on storage.objects
-  for update to authenticated using (bucket_id = 'project-images');
+  for update to authenticated
+  using (bucket_id = 'project-images' and public.is_admin())
+  with check (bucket_id = 'project-images' and public.is_admin());
 create policy "project_images_admin_delete" on storage.objects
-  for delete to authenticated using (bucket_id = 'project-images');
+  for delete to authenticated using (bucket_id = 'project-images' and public.is_admin());
 
 -- ============================================================
 -- Storage bucket for site assets: Hero/About portrait + Services
@@ -234,8 +340,19 @@ on conflict (id) do nothing;
 create policy "site_assets_public_read" on storage.objects
   for select to anon, authenticated using (bucket_id = 'site-assets');
 create policy "site_assets_admin_write" on storage.objects
-  for insert to authenticated with check (bucket_id = 'site-assets');
+  for insert to authenticated with check (bucket_id = 'site-assets' and public.is_admin());
 create policy "site_assets_admin_update" on storage.objects
-  for update to authenticated using (bucket_id = 'site-assets');
+  for update to authenticated
+  using (bucket_id = 'site-assets' and public.is_admin())
+  with check (bucket_id = 'site-assets' and public.is_admin());
 create policy "site_assets_admin_delete" on storage.objects
-  for delete to authenticated using (bucket_id = 'site-assets');
+  for delete to authenticated using (bucket_id = 'site-assets' and public.is_admin());
+
+-- ============================================================
+-- Register the admin (create the user first in Authentication → Users).
+-- ⚠ Replace the email before running.
+-- ============================================================
+
+insert into public.admins (user_id)
+select id from auth.users where email = 'GANTI_DENGAN_EMAIL_ADMIN@example.com'
+on conflict (user_id) do nothing;

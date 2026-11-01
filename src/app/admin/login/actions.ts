@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAdminUser } from "@/lib/supabase/is-admin";
 
 export type LoginState = { error: string } | null;
 
@@ -25,6 +26,12 @@ export async function login(
 
   if (error) {
     return { error: "Email atau password salah." };
+  }
+
+  // Valid account but not on the admin allowlist → don't keep the session.
+  if (!(await getAdminUser(supabase))) {
+    await supabase.auth.signOut();
+    return { error: "Akun ini tidak memiliki akses admin." };
   }
 
   redirect(redirectTo.startsWith("/admin") ? redirectTo : "/admin");

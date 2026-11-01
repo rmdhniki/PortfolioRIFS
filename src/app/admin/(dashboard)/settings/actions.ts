@@ -25,6 +25,6 @@ export async function updateSettings(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/settings");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { error: "", success: true };
 }

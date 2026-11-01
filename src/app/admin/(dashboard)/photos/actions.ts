@@ -39,6 +39,6 @@ export async function updatePhotos(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/photos");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { error: "", success: true };
 }

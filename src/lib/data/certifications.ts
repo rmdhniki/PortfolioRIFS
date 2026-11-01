@@ -1,11 +1,11 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
 import type { CertificationItem } from "@/lib/supabase/types";
 
 export const getCertifications = cache(async (): Promise<CertificationItem[]> => {
   if (!isSupabaseConfigured) return [];
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("certifications")
     .select("*")

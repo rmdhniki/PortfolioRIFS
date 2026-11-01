@@ -40,6 +40,6 @@ export async function updateHero(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/hero");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { error: "", success: true };
 }

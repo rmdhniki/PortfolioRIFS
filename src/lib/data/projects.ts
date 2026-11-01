@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
 import { projects as staticProjects } from "@/lib/projects";
 import type { ProjectRow } from "@/lib/supabase/types";
@@ -32,7 +32,7 @@ const fallbackProjects: ProjectRow[] = staticProjects.map((p, i) => ({
 export const getProjects = cache(async (): Promise<ProjectRow[]> => {
   if (!isSupabaseConfigured) return fallbackProjects;
 
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("projects")
     .select("*")

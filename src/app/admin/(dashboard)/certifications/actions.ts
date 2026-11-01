@@ -40,7 +40,7 @@ export async function saveCertification(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/certifications");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/admin/certifications");
 }
 
@@ -49,5 +49,5 @@ export async function deleteCertification(id: string) {
   const { error } = await supabase.from("certifications").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/certifications");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }

@@ -27,6 +27,6 @@ export async function updateTechStack(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/tech-stack");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { error: "", success: true };
 }

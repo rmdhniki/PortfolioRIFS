@@ -14,6 +14,12 @@ import {
   techStack as staticTechStack,
 } from "@/lib/site-config";
 
+// Statically cached (ISR): visitors get the cached page instead of waiting on a
+// database round trip (Netlify functions run in Ohio, Supabase is in Tokyo).
+// Admin saves refresh it on demand via revalidatePath("/", "layout"); this
+// hourly refresh is only a safety net.
+export const revalidate = 3600;
+
 export default async function Home() {
   const [settings, projects, experiences, certifications] = await Promise.all([
     getSiteSettings(),

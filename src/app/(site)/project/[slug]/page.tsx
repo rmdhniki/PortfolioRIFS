@@ -7,8 +7,18 @@ import { FaGithub } from "react-icons/fa6";
 import { Reveal } from "@/components/motion/reveal";
 import { GalleryCarousel } from "@/components/motion/gallery-carousel";
 import { PhoneMockup } from "@/components/motion/device-mockup";
-import { getAdjacentProject, getProjectBySlug } from "@/lib/data/projects";
+import { getAdjacentProject, getProjectBySlug, getProjects } from "@/lib/data/projects";
 import { galleryImages } from "@/lib/project-images";
+
+// Statically cached (ISR). Admin saves refresh it on demand via
+// revalidatePath("/", "layout"); this hourly refresh is only a safety net.
+export const revalidate = 3600;
+
+/** Pre-render every project page at build time; new slugs render on first visit, then cache. */
+export async function generateStaticParams() {
+  const projects = await getProjects();
+  return projects.map((project) => ({ slug: project.slug }));
+}
 
 export async function generateMetadata({
   params,

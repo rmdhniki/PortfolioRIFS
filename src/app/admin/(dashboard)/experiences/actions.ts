@@ -27,7 +27,7 @@ export async function saveExperience(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/experiences");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   redirect("/admin/experiences");
 }
 
@@ -36,5 +36,5 @@ export async function deleteExperience(id: string) {
   const { error } = await supabase.from("experiences").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/experiences");
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }

@@ -1,0 +1,17 @@
+# Netlify build settings. Next.js support (SSR, ISR, middleware, next/image)
+# comes from Netlify's Next.js adapter, which is installed automatically.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # @supabase/supabase-js no longer supports Node 20 and below.
+  NODE_VERSION = "22"
+
+  # NEXT_PUBLIC_* values are inlined into the browser bundle by design (the
+  # browser needs the Supabase URL + anon key, e.g. for direct uploads). The
+  # anon key is public; data is protected by RLS / is_admin(). Tell secrets
+  # scanning these are expected. RESEND_API_KEY stays scanned on purpose:
+  # finding it in the build output would be a real leak.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"

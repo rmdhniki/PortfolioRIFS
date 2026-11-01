@@ -1,12 +1,12 @@
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
 import type { ExperienceItem } from "@/lib/supabase/types";
 
 /** Visible experiences for the public timeline, in admin-defined order. */
 export const getExperiences = cache(async (): Promise<ExperienceItem[]> => {
   if (!isSupabaseConfigured) return [];
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data, error } = await supabase
     .from("experiences")
     .select("*")

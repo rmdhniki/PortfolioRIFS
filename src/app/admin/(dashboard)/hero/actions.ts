@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/require-admin";
-import { uploadFile } from "@/lib/supabase/storage";
+import { pendingUploadError, readUploadedUrl } from "@/lib/supabase/storage";
 import { heroSchema } from "@/lib/validations/site-settings";
 
 export type HeroFormState = { error: string; success?: boolean } | null;
@@ -16,21 +16,18 @@ export async function updateHero(
     return { error: parsed.error.issues[0]?.message ?? "Data tidak valid." };
   }
 
-  const { supabase } = await requireAdmin();
-  const file = formData.get("cv");
-  let cvUrl: string | null | undefined;
+  const pending = pendingUploadError(formData);
+  if (pending) return { error: pending };
 
-  if (file instanceof File && file.size > 0) {
-    try {
-      cvUrl = await uploadFile(supabase, "site-assets", file, "cv", "pdf");
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : "Upload CV gagal." };
-    }
-  }
+  const uploaded = readUploadedUrl(formData, "cv_url", "site-assets", "pdf");
+  if (typeof uploaded === "object") return { error: uploaded.error };
+  let cvUrl: string | null | undefined = uploaded;
 
   if (formData.get("remove_cv") === "on") {
     cvUrl = null;
   }
+
+  const { supabase } = await requireAdmin();
 
   const { error } = await supabase
     .from("site_settings")

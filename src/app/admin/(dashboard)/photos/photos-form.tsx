@@ -9,30 +9,35 @@ import { updatePhotos, type PhotosFormState } from "./actions";
 const fields = [
   {
     name: "hero_image",
+    prefix: "hero",
     label: "Foto Hero (depan)",
     hint: "Tampil di kartu foto pada Hero Section.",
     column: "hero_image_url",
   },
   {
     name: "services_image",
+    prefix: "services",
     label: "Foto Hero (belakang)",
     hint: "Sisi belakang kartu, tampil setelah kartu berputar ke Services Section.",
     column: "services_image_url",
   },
   {
     name: "about_front_image",
+    prefix: "about-front",
     label: "About (depan)",
     hint: "Sisi depan kartu Lanyard.",
     column: "about_front_image_url",
   },
   {
     name: "about_back_image",
+    prefix: "about-back",
     label: "About (belakang)",
     hint: "Sisi belakang setelah kartu Lanyard diklik. Jika kosong, memakai foto depan.",
     column: "about_back_image_url",
   },
   {
     name: "lanyard_strap_image",
+    prefix: "lanyard-strap",
     label: "Gambar Tali Lanyard (opsional)",
     hint: "Gambar memanjang yang tercetak pada tali.",
     column: "lanyard_strap_image_url",
@@ -63,6 +68,8 @@ export function PhotosForm({ settings }: { settings: SiteSettingsRow }) {
           <div key={field.name} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
             <ImageUploadField
               name={field.name}
+              bucket="site-assets"
+              prefix={field.prefix}
               label={field.label}
               hint={field.hint}
               currentUrl={settings[field.column]}

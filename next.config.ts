@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     serverActions: {
-      bodySizeLimit: "20mb",
+      // Files upload straight from the browser to Supabase Storage, so Server
+      // Actions only receive form fields + URLs. Keep well under Vercel's 4.5MB cap.
+      bodySizeLimit: "1mb",
     },
   },
 };

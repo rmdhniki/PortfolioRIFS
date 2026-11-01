@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
-import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import type { ProjectFormState } from "./actions";
 import type { ProjectRow } from "@/lib/supabase/types";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { GalleryEditor } from "./gallery-editor";
 
 function slugify(text: string) {
@@ -229,7 +229,7 @@ export function ProjectForm({
         />
       </Field>
       <Field label="Gallery Images (opsional)" name="gallery_new">
-        <GalleryEditor initial={project?.gallery ?? []} />
+        <GalleryEditor initial={project?.gallery ?? []} prefix={slug || "project"} />
       </Field>
 
       <div className="grid gap-5 sm:grid-cols-2">
@@ -241,28 +241,16 @@ export function ProjectForm({
         </Field>
       </div>
 
-      <Field label="Project Image" name="image">
-        <div className="flex items-center gap-4">
-          {project?.image_url && (
-            <Image
-              src={project.image_url}
-              alt=""
-              width={64}
-              height={64}
-              className="size-16 rounded-lg object-cover"
-            />
-          )}
-          <div>
-            <input
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-              className="text-sm text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3.5 file:py-2 file:text-sm file:text-zinc-200"
-            />
-            <p className="mt-1.5 text-xs text-zinc-600">Maks. 5MB.</p>
-          </div>
-        </div>
+      <Field label="Project Image (gambar utama / slide pertama)" name="image_url">
+        <ImageUploadField
+          name="image_url"
+          bucket="project-images"
+          prefix={slug || "project"}
+          currentUrl={project?.image_url}
+          maxDimension={2400}
+          previewClassName="aspect-video w-full max-w-md"
+          hint="Web: screenshot landscape (16:10). Mobile: screenshot portrait (9:19.5). Langsung diunggah saat dipilih."
+        />
       </Field>
 
       <button

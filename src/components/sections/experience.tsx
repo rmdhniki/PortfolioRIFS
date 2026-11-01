@@ -25,6 +25,14 @@ const TRACK_AT = 0.55;
 // Horizontal centre of the line (px from the list's left edge), per breakpoint.
 const LINE_X = "left-5.5 md:left-6";
 
+/**
+ * Scroll distance between two entries. The avatar moves 1:1 with scroll, so a
+ * taller gap = more time on each step of the journey; the card stays sticky
+ * beside the avatar during it. Must be a spacer element, not padding: a sticky
+ * element can only travel within its parent's content box.
+ */
+const ENTRY_GAP = "h-[42vh] md:h-[48vh]";
+
 type Layout = { start: number; end: number; height: number; stops: number[] };
 
 const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -100,7 +108,8 @@ export function Experience({ experiences }: { experiences: ExperienceItem[] }) {
     target: listRef,
     offset: [`start ${TRACK_AT * 100}%`, `end ${TRACK_AT * 100}%`],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, mass: 0.5 });
+  // Slightly softer spring: the avatar glides between waypoints instead of snapping.
+  const progress = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.6 });
 
   // Avatar position along the line, clamped between the first and the closing waypoint.
   const positionAt = useCallback(
@@ -187,14 +196,21 @@ export function Experience({ experiences }: { experiences: ExperienceItem[] }) {
               // fades in when the avatar touches its dot, and hides again on the way back up.
               const shown = reduce || (index === 0 ? listInView || isReached : isReached);
               return (
-                <li key={item.id} className="relative pb-12 pl-16 md:pl-20">
+                <li key={item.id} className={`relative pl-16 md:pl-20 ${reduce ? "pb-12" : ""}`}>
                   <Waypoint lit={isReached} innerRef={setStopRef(index)} className="top-7" />
                   <motion.article
                     initial={false}
                     animate={shown ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: 28, scale: 0.98 }}
                     transition={{ duration: shown ? 0.6 : 0.35, ease }}
-                    style={{ pointerEvents: shown ? "auto" : "none" }}
+                    style={{
+                      pointerEvents: shown ? "auto" : "none",
+                      // Sticky beside the avatar (which sits at TRACK_AT of the screen) for the
+                      // whole gap, so the card travels with it until the next entry pushes it up.
+                      top: reduce ? undefined : `calc(${TRACK_AT * 100}vh - 2.75rem)`,
+                    }}
                     className={`rounded-2xl border bg-card p-5 transition-[border-color,box-shadow] duration-500 md:p-6 ${
+                      reduce ? "" : "sticky"
+                    } ${
                       isActive
                         ? "border-[#8FEFEF]/40 shadow-[0_0_32px_-12px_rgba(143,239,239,0.55)]"
                         : "border-border"
@@ -215,6 +231,7 @@ export function Experience({ experiences }: { experiences: ExperienceItem[] }) {
                       </p>
                     )}
                   </motion.article>
+                  {!reduce && <div aria-hidden className={ENTRY_GAP} />}
                 </li>
               );
             })}

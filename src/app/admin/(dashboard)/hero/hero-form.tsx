@@ -1,9 +1,58 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { SiteSettingsRow } from "@/lib/supabase/types";
+import { UPLOADING_FIELD } from "@/lib/supabase/storage";
+import { uploadToStorage } from "@/lib/supabase/upload-client";
 import { updateHero, type HeroFormState } from "./actions";
+
+/** PDF picker that uploads straight to Supabase Storage; the form submits only `cv_url`. */
+function CvUploadField() {
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    setError(null);
+    setUrl("");
+    if (!file) return;
+    setBusy(true);
+    try {
+      setUrl(await uploadToStorage(file, "site-assets", "cv", "pdf"));
+    } catch (err) {
+      input.value = "";
+      setError(err instanceof Error ? err.message : "Upload CV gagal.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <input type="hidden" name="cv_url" value={url} />
+      {busy && <input type="hidden" name={UPLOADING_FIELD} value="1" />}
+      <input
+        id="cv"
+        type="file"
+        accept="application/pdf"
+        onChange={onChange}
+        disabled={busy}
+        className="text-sm text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3.5 file:py-2 file:text-sm file:text-zinc-200"
+      />
+      {busy && (
+        <p className="flex items-center gap-1.5 text-xs text-zinc-400">
+          <Loader2 className="size-3.5 animate-spin" /> Mengunggah…
+        </p>
+      )}
+      {url && !busy && <p className="text-xs text-emerald-400">CV terunggah. Klik Save Hero untuk menerapkan.</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <p className="text-xs text-zinc-600">Hanya PDF, maksimal 5MB.</p>
+    </div>
+  );
+}
 
 const inputClass =
   "w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 py-2.5 text-sm text-zinc-100 outline-none transition-colors focus:border-caramel";
@@ -58,14 +107,7 @@ export function HeroForm({ settings }: { settings: SiteSettingsRow }) {
         ) : (
           <p className="text-sm text-zinc-600">Belum ada CV. Tombol Download CV disembunyikan.</p>
         )}
-        <input
-          id="cv"
-          name="cv"
-          type="file"
-          accept="application/pdf"
-          className="text-sm text-zinc-400 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-800 file:px-3.5 file:py-2 file:text-sm file:text-zinc-200"
-        />
-        <p className="text-xs text-zinc-600">Hanya PDF, maksimal 5MB.</p>
+        <CvUploadField />
         {settings.cv_url && (
           <label className="flex items-center gap-2 text-sm text-zinc-300">
             <input

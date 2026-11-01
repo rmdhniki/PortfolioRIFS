@@ -105,12 +105,14 @@ export function CertificationForm({
         />
       </Field>
 
-      <Field label="Certificate Image" name="image">
+      <Field label="Certificate Image" name="image_url">
         <ImageUploadField
-          name="image"
+          name="image_url"
+          bucket="site-assets"
+          prefix="certificate"
           currentUrl={certification?.image_url}
           previewClassName="aspect-[1.414] w-full max-w-md"
-          hint="JPG, PNG, atau WebP. Gambar besar otomatis dikompres sebelum diunggah."
+          hint="JPG, PNG, atau WebP. Gambar besar otomatis dikompres dan langsung diunggah saat dipilih."
         />
       </Field>
 

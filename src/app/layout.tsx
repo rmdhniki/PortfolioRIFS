@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, Geist_Mono } from "next/font/google";
 import { MotionProvider } from "@/providers/motion-provider";
-import { loaderSkipScript } from "@/lib/site-loader";
+import { loaderProgressScript, loaderSkipScript } from "@/lib/site-loader";
 import "./globals.css";
 
 // Headings & buttons: Space Grotesk 600–700. Body & navigation: Inter 400–500.
@@ -44,6 +44,8 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: loaderSkipScript }} />
+        {/* Runs the loading bar before React hydrates (otherwise it sits at 0% on slow connections). */}
+        <script dangerouslySetInnerHTML={{ __html: loaderProgressScript }} />
         <noscript>
           <style>{"#site-loader{display:none!important}"}</style>
         </noscript>

@@ -2,41 +2,39 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/require-admin";
-import { uploadFile } from "@/lib/supabase/storage";
+import { pendingUploadError, readUploadedUrl } from "@/lib/supabase/storage";
 import type { SiteSettingsRow } from "@/lib/supabase/types";
 
 export type PhotosFormState = { error: string; success?: boolean } | null;
 
+/** Form field (holding the uploaded URL) → site_settings column. */
 const photoFields = [
-  ["hero_image", "hero", "hero_image_url"],
-  ["services_image", "services", "services_image_url"],
-  ["about_front_image", "about-front", "about_front_image_url"],
-  ["about_back_image", "about-back", "about_back_image_url"],
-  ["lanyard_strap_image", "lanyard-strap", "lanyard_strap_image_url"],
+  ["hero_image", "hero_image_url"],
+  ["services_image", "services_image_url"],
+  ["about_front_image", "about_front_image_url"],
+  ["about_back_image", "about_back_image_url"],
+  ["lanyard_strap_image", "lanyard_strap_image_url"],
 ] as const;
 
 export async function updatePhotos(
   _prevState: PhotosFormState,
   formData: FormData
 ): Promise<PhotosFormState> {
-  const { supabase } = await requireAdmin();
-  const images: Partial<SiteSettingsRow> = {};
+  const pending = pendingUploadError(formData);
+  if (pending) return { error: pending };
 
-  try {
-    for (const [field, prefix, column] of photoFields) {
-      const file = formData.get(field);
-      if (file instanceof File && file.size > 0) {
-        images[column] = await uploadFile(supabase, "site-assets", file, prefix);
-      }
-    }
-  } catch (err) {
-    return { error: err instanceof Error ? err.message : "Upload gambar gagal." };
+  const images: Partial<SiteSettingsRow> = {};
+  for (const [field, column] of photoFields) {
+    const url = readUploadedUrl(formData, field, "site-assets");
+    if (typeof url === "object") return { error: url.error };
+    if (url) images[column] = url;
   }
 
   if (Object.keys(images).length === 0) {
     return { error: "Pilih minimal satu gambar untuk diunggah." };
   }
 
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("site_settings").update(images).eq("id", 1);
   if (error) return { error: error.message };
 

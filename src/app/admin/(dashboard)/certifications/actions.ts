@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/require-admin";
-import { uploadFile } from "@/lib/supabase/storage";
+import { pendingUploadError, readUploadedUrl } from "@/lib/supabase/storage";
 import { certificationSchema } from "@/lib/validations/site-settings";
 
 export type CertificationFormState = { error: string } | null;
@@ -19,17 +19,14 @@ export async function saveCertification(
     return { error: issue ? `${issue.path.join(".")}: ${issue.message}` : "Data tidak valid." };
   }
 
-  const { supabase } = await requireAdmin();
-  const file = formData.get("image");
-  let imageUrl: string | undefined;
+  const pending = pendingUploadError(formData);
+  if (pending) return { error: pending };
 
-  if (file instanceof File && file.size > 0) {
-    try {
-      imageUrl = await uploadFile(supabase, "site-assets", file, "certificate");
-    } catch (err) {
-      return { error: err instanceof Error ? err.message : "Upload gambar gagal." };
-    }
-  }
+  const image = readUploadedUrl(formData, "image_url", "site-assets");
+  if (typeof image === "object") return { error: image.error };
+  const imageUrl = image;
+
+  const { supabase } = await requireAdmin();
 
   const values = { ...parsed.data, verify_url: parsed.data.verify_url || null };
 

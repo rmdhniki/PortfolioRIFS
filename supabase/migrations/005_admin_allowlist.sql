@@ -125,7 +125,7 @@ create policy "site_assets_admin_delete" on storage.objects
 -- ============================================================
 
 insert into public.admins (user_id)
-select id from auth.users where email = 'GANTI_DENGAN_EMAIL_ADMIN@example.com'
+select id from auth.users where email = 'rmdhniki18@gmail.com'
 on conflict (user_id) do nothing;
 
 -- Sanity check: should return 1 row. If it returns 0, the email above is wrong

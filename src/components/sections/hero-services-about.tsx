@@ -262,7 +262,7 @@ export function HeroServicesAbout({
             </Reveal>
             <Reveal delay={0.4}>
               <p className="text-xs text-muted-foreground">
-                Tarik, ayunkan, atau klik kartu untuk melihat sisi lainnya.
+                klik kartu untuk melihat sisi lain Rifs!.
               </p>
             </Reveal>
           </div>
